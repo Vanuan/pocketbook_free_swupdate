@@ -11,5 +11,6 @@ int main(int argc, char ** argv)
   }
   PocketBookUpdate update(argv[1]);
   update.print();
+  update.extract();
 }
 

@@ -2,9 +2,18 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 using namespace std;
 
-PocketBookUpdate::PocketBookUpdate(const char*filename)
+string convertInt(int number)
+{
+   if( number == 0) return "";
+   stringstream ss;//create a stringstream
+   ss << number;//add number to the stream
+   return ss.str();//return a string with the contents of the stream
+}
+
+PocketBookUpdate::PocketBookUpdate(const char*filename) : mFilename(filename)
 {
   // allocate buffer
   int size_of_header = sizeof(PocketBookUpdateHeader);
@@ -18,6 +27,42 @@ PocketBookUpdate::PocketBookUpdate(const char*filename)
 
   // interpret buffer as header
   header = reinterpret_cast<PocketBookUpdateHeader*>(buffer);
+
+  partsNames[SWUPDATE_TAR_GZ] = "swupdate.tar.gz";
+  partsNames[ELF_IMG] = "elf.img";
+  partsNames[APP_IMG] = "app.img";
+  partsNames[ROOTFS_IMG] = "rootfs.img";
+  partsNames[A_IMG] = "a.img";
+
+  for(int i = 0; i < sizeof(header->fwParts)/sizeof(header->fwParts[0]); ++i)
+  {
+    if(0 == header->fwParts[i].size ) continue;
+    string name;
+    // printName
+    map<PartitionType, const char*>::const_iterator partNameIter =
+       partsNames.find(static_cast<PartitionType>(header->fwParts[i].type));
+    if(partNameIter != partsNames.end())
+    {
+      name = partNameIter->second;
+    }
+    else
+    {
+      name = "unknownImg";
+    }
+    int nameCounter = 0;
+    string tempName;
+    map<string, FWPart>::iterator it = parts.end();
+    do {
+      tempName = name + convertInt(nameCounter);
+      it = parts.find(string(tempName));
+      nameCounter++;
+    }
+    while(it != parts.end());
+    name = tempName;
+    pair<map<string, FWPart>::iterator,bool> index = 
+        parts.insert(pair<string, FWPart>(name, header->fwParts[i]));
+    index.first->second.offset += sizeof(*header);
+  }
 }
 
 PocketBookUpdate::~PocketBookUpdate()
@@ -25,6 +70,23 @@ PocketBookUpdate::~PocketBookUpdate()
   delete[] buffer;
 }
 
+void PocketBookUpdate::extract()
+{
+  ifstream infile(mFilename.c_str(), ifstream::binary);
+  map<string, FWPart>::const_iterator it;
+  for ( it=parts.begin(); it != parts.end(); it++ )
+  {
+    infile.seekg(it->second.offset);
+    ofstream outfile(it->first.c_str(), ofstream::binary);
+    long unsigned int size = it->second.size;
+    char*buf = new char[size];
+    infile.read(buf, size);
+    outfile.write(buf, size);
+    delete[] buf;
+    outfile.close();
+  }
+  infile.close();
+}
 
 int PocketBookUpdate::printField(unsigned offset, unsigned size, const char* name)
 {
@@ -105,35 +167,10 @@ void PocketBookUpdate::print()
 
 int PocketBookUpdate::printParts()
 {
-  int baseOffset = sizeof(*header);
-  for(int i = 0; i < sizeof(header->fwParts)/sizeof(header->fwParts[0]); ++i)
+  map<string, FWPart>::const_iterator it;
+  for ( it=parts.begin() ; it != parts.end(); it++ )
   {
-    int offset = header->fwParts[i].offset;
-    int size = header->fwParts[i].size;
-    if(0 == size ) continue;
-    offset += baseOffset;
-    printField(offset, size, "part");
-    switch(header->fwParts[i].type)
-    {
-      case SWUPDATE_TAR_GZ:
-        cout << "swupdate.tar.gz";
-        break;
-      case ELF_IMG:
-        cout << "elf.img";
-        break;
-      case APP_IMG:
-        cout << "app.img";
-        break;
-      case ROOTFS_IMG:
-        cout << "rootfs.img";
-        break;
-      case A_IMG:
-        cout << "a.img";
-        break;
-      default:
-        cout << "unknown type" << header->fwParts[i].type;
-    }
-    cout << endl;
+    printField(it->second.offset, it->second.size, it->first.c_str());
   }
 }
 

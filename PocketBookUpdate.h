@@ -1,6 +1,8 @@
 #ifndef POCKETBOOK_UPDATE_H
 #define POCKETBOOK_UPDATE_H
 
+#include <string>
+#include <map>
 #include <stdint.h>
 
 enum PartitionType
@@ -35,14 +37,18 @@ class PocketBookUpdate
 {
   char *buffer;
   PocketBookUpdateHeader * header;
-  const static int fieldsNumber = 2;
-  const unsigned char** fieldNames[fieldsNumber];
 
-  static int sizes[fieldsNumber];
+  std::string mFilename;
+  std::map<PartitionType, const char*> partsNames;
+  std::map<std::string, FWPart> parts;
+
 public:
   PocketBookUpdate(const char *filename);
   virtual ~PocketBookUpdate();
+  void extract();
   void print();
+
+private:
   int printField(unsigned i);
   int printField(unsigned offset, unsigned size, const char* name);
   int printParts();
