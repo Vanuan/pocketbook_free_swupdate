@@ -1,2 +1,4 @@
 parseUpdate
 *.o
+rootfs_extracted
+swupdate_extracted

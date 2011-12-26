@@ -1,1 +1,14 @@
 This project's goal is to create opensource tool to manage swupdate firmware files.
+
+Usage:
+
+./extract.sh /path/to/SWUPDATE.BIN
+enter password (to mount image)
+see the files in rootfs_extracted folder.
+
+Requirements:
+
+- linux
+- make
+- g++
+
