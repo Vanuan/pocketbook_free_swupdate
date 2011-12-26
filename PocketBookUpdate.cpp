@@ -5,6 +5,8 @@
 #include <sstream>
 using namespace std;
 
+#include <sys/stat.h>
+
 string convertInt(int number)
 {
    if( number == 0) return "";
@@ -70,14 +72,21 @@ PocketBookUpdate::~PocketBookUpdate()
   delete[] buffer;
 }
 
-void PocketBookUpdate::extract()
+void PocketBookUpdate::extract(const char * outputDir)
 {
+  struct stat st;
+  if(stat(outputDir,&st) != 0)
+  {
+    cout << "Directory " << outputDir << " doesn't exist" << endl;
+    return;
+  }
   ifstream infile(mFilename.c_str(), ifstream::binary);
   map<string, FWPart>::const_iterator it;
   for ( it=parts.begin(); it != parts.end(); it++ )
   {
     infile.seekg(it->second.offset);
-    ofstream outfile(it->first.c_str(), ofstream::binary);
+    string outputFilename = string(outputDir) + string("/") + it->first;
+    ofstream outfile(outputFilename.c_str(), ofstream::binary);
     long unsigned int size = it->second.size;
     char*buf = new char[size];
     infile.read(buf, size);

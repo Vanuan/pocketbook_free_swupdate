@@ -45,7 +45,7 @@ class PocketBookUpdate
 public:
   PocketBookUpdate(const char *filename);
   virtual ~PocketBookUpdate();
-  void extract();
+  void extract(const char* outputDir);
   void print();
 
 private:
