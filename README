@@ -6,9 +6,22 @@ Usage:
 enter password (to mount image)
 see the files in rootfs_extracted folder.
 
+./arm_chroot
+enter password (needed to chroot)
+run arm programs like on device.
+
 Requirements:
+
+For extraction:
 
 - linux
 - make
 - g++
 
+For chrooting:
+
+- qemu-arm-static
+- binfmt-support
+
+Check whether the binfmt entries were successfully registered:
+- update-binfmts --display
