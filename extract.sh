@@ -21,11 +21,11 @@ make
 mkdir -p $ROOTFS_EXTRACTED
 sudo mount -t ext2 -o loop $SWUPDATE_EXTRACTED/$ROOTFS_FILE $TEMP_MOUNT/
 cp -dpR $TEMP_MOUNT/* $ROOTFS_EXTRACTED/
-sudo umount $TEMP_MOUNT
+sudo umount -d $TEMP_MOUNT
 
 mkdir -p $APPFS_EXTRACTED
 sudo mount -t ext2 -o loop $SWUPDATE_EXTRACTED/$APPFS_FILE $TEMP_MOUNT/
 cp -dpR $TEMP_MOUNT/* $APPFS_EXTRACTED/
-sudo umount $TEMP_MOUNT
+sudo umount -d $TEMP_MOUNT
 
 rmdir $TEMP_MOUNT
