@@ -4,7 +4,7 @@
 # and places it to $ROOTFS_EXTRACTED folder (using mount and cp commands).
 # On some systems root priveleges are required to mount an image.
 
-export SWUPDATE_FILE="%1"
+export SWUPDATE_FILE="$1"
 export SWUPDATE_EXTRACTED=swupdate_extracted
 export ROOTFS_FILE=rootfs.img
 export APPFS_FILE=app.img
